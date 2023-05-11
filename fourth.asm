@@ -10,8 +10,11 @@
     ee DB 13,10,'a=b $'
     a DW 0 
     b DW 0 
+    res DW 0 
     multiplier dw 1 
- 
+    result dw ? 
+    counter DB 0
+    tmp DW 0
 
 .code 
 start:
@@ -63,34 +66,39 @@ je jmp label3
     int 21h 
  
 
-input proc
-    mov ah, 01h 
-    int 21h 
-    sub al, 30h
-    mov bl, al
-
-getnum:
-    mov ah, 01h 
-    int 21h 
-    cmp al, 0Dh 
-    je endget 
-    sub al, 30h 
+input PROC
+C:
+    mov ah,1
+    int 21h
+    cmp al,13
+    je A2
+    sub al,30h
+    cbw
+    push ax
+    inc counter
+    jmp C
+A2:
+    cmp counter,0
+    jle exit
+    pop ax
+    dec counter
     
-   
-    mov ax, 10
+    mov dx,multiplier
+    imul dx
+    add tmp,ax
     
-    mul bx 
-    add bl, al 
-    mov ah, 02h 
-    mov dl, al 
-    int 21h 
-    jmp getnum 
+    mov ax,multiplier
+    mov dx,10
+    imul dx
+    mov multiplier,ax
+    jmp A2
 
-endget:
-    mov ax, bx 
-    mov dx, 0 
-    mov multiplier, 1 
-    ret 
-input endp  
+exit:
+    mov ax,tmp
+    mov multiplier,1
+    mov tmp,0    
+    ret
+input ENDP
+
 
 end start
